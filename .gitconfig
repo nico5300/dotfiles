@@ -1,0 +1,5 @@
+[user]
+	name = Nico Greger
+	email = nico.greger@in.tum.de
+[core]
+	autocrlf = input
