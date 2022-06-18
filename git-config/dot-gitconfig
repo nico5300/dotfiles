@@ -1,0 +1,6 @@
+[user]
+	name = Nico Greger
+	email = nico.greger@tum.de
+[core]
+    autocrlf = input
+    editor = vim
