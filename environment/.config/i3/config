@@ -10,6 +10,9 @@
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
 # was Mod1 (alt) before
+# Mod1 is Alt
+# Mod4 is Super (Windows). It is set to Mod4 but within KDE, Alt and Super are swapped 
+# for easy access with the thumb
 set $mod Mod4
 set $mod1 Mod1
 
@@ -202,6 +205,9 @@ bar {
      -p playerctl.format="{{artist}} - {{title}}" \
      -p playerctl.args="-i firefox"
 }
+
+
+# TODO: For bumblebee-status: the NIC Applet should start the networkmanager plasmoid like so: "plasmawindowed org.kde.plasma.networkmanagement" 
 
 # Set Desktop background
 set $feh_cmd feh --bg-fill ~/Downloads/XebDpgg.jpg
