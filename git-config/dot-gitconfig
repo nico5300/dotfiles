@@ -1,6 +1,6 @@
 [user]
 	name = Nico Greger
-	email = nico.greger@cit.tum.de
+	email = nico.greger@tum.de
 [core]
     autocrlf = input
     editor = vim
@@ -19,3 +19,7 @@
     #cmd = meld "$LOCAL" "$MERGED" "$REMOTE" --output "$MERGED" 
     # For commmon file ancestor
     cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
+[cinnabar]
+	version-check = 1736977540
+[init]
+	defaultBranch = main

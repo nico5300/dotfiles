@@ -79,11 +79,13 @@ alias serve="miniserve"
 alias adminlist="vim ~/vorstand/ansible-private/accounts/users.yml"
 alias popenstack="proxychains openstack"
 alias s="ssh"
-alias stustagit="GIT_SSH_COMMAND=\"ssh -J stusta\" git"
+alias stustagit="GIT_SSH_COMMAND=\"ssh -J stusta,tom.stusta.de\" git"
 alias gitlog="git log --pretty=format:\"%h - %an: %s\" | head -n 20"
 alias kleedocker="docker run -it -v ~/Bachelorarbeit/docker-mnt/:/mnt klee/klee"
+alias idpdocker="docker run -it -v ~/IDP:/root deb-zsh"
 alias optmypass="opt -aa -load=/home/nico/Studium/WS_21_22/Bachelorarbeit/PassesOutOfSource/build/AA-Relations/libAA-Relations.so"
 alias gspdfconcat="gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=output.pdf"
+alias idpmount="sshfs -o reconnect,ServerAliveInterval=15,ServerAliveCountMax=3,VerifyHostKeyDNS=no,ProxyJump=gregern@sshgw.net.in.tum.de gregern@coinbase.net.in.tum.de:/home/gregern /home/nico/IDP/mnt"
 
 
 export CC=clang
@@ -150,6 +152,22 @@ function tryping() {
         done
 }
 
+# dump some interface and trafic remotely over ssh
+# and live-display in wireshark-gui
+function wiresharkremote() {
+    if [[ $# -lt 2 ]]; then
+        echo "usage: $0 <hostname> <interface> [filter...]"
+        echo ""
+        echo "call tcpdump over ssh, and display results live in wireshark"
+        return
+    fi
+    server=$1
+    shift
+    interface=$1
+    shift
+    wireshark -kni <(ssh $server "sudo tcpdump -s 0 -n -w - -U -i $interface $@")
+}
+
 # just return the fucking ip address
 function getip() {
         local ip=$(dig +short "$1" | tail -n1)
@@ -157,6 +175,39 @@ function getip() {
 }
 
 transfer(){ if [ $# -eq 0 ];then echo "No arguments specified.\nUsage:\n  transfer <file|directory>\n  ... | transfer <file_name>">&2;return 1;fi;if tty -s;then file="$1";file_name=$(basename "$file");if [ ! -e "$file" ];then echo "$file: No such file or directory">&2;return 1;fi;if [ -d "$file" ];then file_name="$file_name.zip" ,;(cd "$file"&&zip -r -q - .)|curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null,;else cat "$file"|curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null;fi;else file_name=$1;curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null;fi;}
+
+
+function pingd () { # ping the default gateway
+  ping $(ip route | awk '/^default via/ { print $3 ; exit }')
+}
+
+############### STUSTANET #################
+VIDEOSCREEN="knecht.stusta.de"
+
+function cat-knecht() {
+    url="https://daten.stusta.de/files/a_cat_videos_dgq/"
+    touch /tmp/cat_videos_played
+    tail -n500 /tmp/cat_videos_played > /tmp/cat_videos_short
+    while true; do
+        video=$url$(curl "$url"  2>/dev/null | xmllint --html --xpath "//a[@title]/@href" -  2>/dev/null | awk '{ split($0,a,"\""); printf "%s\n", a[2] }' | shuf -n1)
+        if not grep -q "$video" "/tmp/cat_videos_short"; then
+            break;
+        fi
+    done
+    echo "$video" | nc $VIDEOSCREEN 60601
+    echo "$video" >> /tmp/cat_videos_played
+    echo "$video"
+}
+function catomat3000() {
+    while true; do
+        cat-knecht;
+        video=$(tail -n1 /tmp/cat_videos_played)
+        wait=$(ffprobe -show_streams -print_format json "$video" 2>/dev/null | jq -r '.streams[0].duration');
+        echo Playing for $wait seconds
+        sleep $wait;
+    done
+}
+
 
 #transfer(){
 #    if [ $# -eq 0 ]; then
@@ -186,6 +237,7 @@ transfer(){ if [ $# -eq 0 ];then echo "No arguments specified.\nUsage:\n  transf
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$PATH:~/.config/emacs/bin/
 
 # Path to your oh-my-zsh installation.
 ZSH=/usr/share/oh-my-zsh/
@@ -301,5 +353,21 @@ source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 #[ -f "/home/nico/.ghcup/env" ] && source "/home/nico/.ghcup/env" # ghcup-env
 #[ -f "/home/nico/.ghcup/env" ] && source "/home/nico/.ghcup/env" # ghcup-env
-[ -f "/home/nico/.ghcup/env" ] && source "/home/nico/.ghcup/env" # ghcup-env
 
+# Master's thesis
+export PATH="/home/nico/Masterarbeit/chromium/depot_tools:/home/nico/.mozbuild/git-cinnabar:$PATH"
+
+
+# work: Node version manager
+eval "$(fnm env --use-on-cd)"
+
+export PATH="/opt/aws-runas:$PATH"
+
+## Rehash, wenn sich das Verzeichnis ändert (und typischerweise die Node-Version)
+#autoload -U add-zsh-hook
+#_node_rehash_if_needed() {
+#  # optional: nur in Projekten mit .nvmrc/.node-version
+#  if [[ -f .nvmrc || -f .node-version ]]; then
+#    rehash
+#  fi
+#}
