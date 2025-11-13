@@ -248,6 +248,7 @@ exec --no-startup-id xset r rate 250 60
 
 for_window [title="Desktop — Plasma"] kill, floating enable, border none
 for_window [title="Arbeitsfläche — Plasma"] kill, floating enable, border none
+for_window [title="Arbeitsfläche @ QRect.*"] kill, floating enable, border none
 for_window [title="Bureau — Plasma"] kill, floating enable, border none
 
 ## Avoid tiling popups, dropdown windows from plasma
